@@ -1,0 +1,188 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.tree import DecisionTreeClassifier,plot_tree
+data = {
+    'Day': ['D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'D11', 'D12', 'D13', 'D14'],
+    'Outlook': ['Sunny', 'Sunny', 'Overcast', 'Rain', 'Rain', 'Rain', 'Overcast', 'Sunny', 'Sunny', 'Rain', 'Sunny', 'Overcast', 'Overcast', 'Rain'],
+    'Temperature': ['Hot', 'Hot', 'Hot', 'Mild', 'Cool', 'Cool', 'Cool', 'Mild', 'Cool', 'Mild', 'Mild', 'Mild', 'Hot', 'Mild'],
+    'Humidity': ['High', 'High', 'High', 'High', 'Normal', 'Normal', 'Normal', 'High', 'Normal', 'Normal', 'High', 'High', 'Normal', 'High'],
+    'Wind': ['Weak', 'Strong', 'Weak', 'Weak', 'Weak', 'Strong', 'Strong', 'Weak', 'Weak', 'Weak', 'Strong', 'Strong', 'Weak', 'Strong'],
+    'PlayTennis': ['No', 'No', 'Yes', 'Yes', 'Yes', 'No', 'Yes', 'No', 'Yes', 'Yes', 'Yes', 'Yes', 'Yes', 'No']
+}
+df=pd.DataFrame(data)
+x=pd.get_dummies(df[["Outlook","Temperature","Humidity","Wind"]])
+y=df['PlayTennis']
+model=DecisionTreeClassifier(criterion='entropy')
+model.fit(x,y)
+plt.figure(figsize=(12,8))
+plot_tree(model,feature_names=x.columns,class_names=model.classes_,filled=True,rounded=True)
+plt.legend()
+plt.show()
+
+import random
+data=[
+    [1,1],[1.5,2],[3,4],[5,7],[3.5,5],[4.5,5],[3.5,4.5]
+]
+def dist(p1,p2):
+    return ((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)**0.5
+def kmeans(data,k=2,iter=5):
+    centeroids=random.sample(data,k)
+    for _ in range (iter):
+        clusters=[[]for _ in range (k)]
+        for point in data:
+            distances=[dist(point,centeroid) for centeroid in centeroids]
+            closest=distances.index(min(distances))
+            clusters[closest].append(point)
+        for i in range(k):
+            if clusters[i]:
+                x=sum(p[0] for p in clusters[i])/len(clusters[i])
+                y=sum(p[1] for p in clusters[i])/len(clusters[i])
+                centeroids[i]=[x,y]
+        return clusters
+k=2
+clusters=kmeans(data,k=2)
+for i,cluster in enumerate(clusters):
+    print(f"cluster {i+1}:{cluster}")
+
+
+x=[0,1,2,3,4]
+y=[2,3,5,4,6]
+mean_x=sum(x)/len(x)
+mean_y=sum(y)/len(y)
+num=sum((x[i]-mean_x)*(y[i]-mean_y) for i in range(len(x)))
+den=sum((x[i]-mean_x)**2 for i in range(len(x)))
+a=num/den
+b=mean_y-a*mean_x
+print(f"{a:.2f}x+{b:.2f}")
+x_new=10
+y_new=a*x_new+b
+print(f"{y_new:.2f}")
+errors=[(y[i]-(a*x[i]+b))**2 for i in range(len(x))]
+mse=sum(errors)/len(x)
+print(f"mse = {mse:.2f}")
+
+data=[
+     ['Sunny', 'Warm', 'Normal', 'Strong', 'Warm', 'Same', 'Yes'],
+    ['Sunny', 'Warm', 'High', 'Strong', 'Warm', 'Same', 'Yes'],
+    ['Rainy', 'Cold', 'High', 'Strong', 'Warm', 'Change', 'No'],
+    ['Sunny', 'Warm', 'High', 'Strong', 'Cool', 'Change', 'Yes']
+]
+hypo=['0']*(len(data[0])-1)
+for instances in data:
+    if instances[-1]=='Yes':
+        for i in range(len(hypo)):
+            if hypo[i]=='0':
+                hypo[i]=instances[i]
+            elif hypo[i]!=instances[i]:
+                hypo[i]='?'
+
+print(hypo)
+
+
+import pandas as pd
+import numpy as np
+from sklearn.mixture import GaussianMixture
+from sklearn import datasets
+import matplotlib.pyplot as plt
+iris=datasets.load_iris()
+x=iris.data[:,:2]
+gmm=GaussianMixture(n_components=3)
+gmm.fit(x)
+labels=gmm.predict(x)
+colors=["red","green","yellow"]
+for i in range(3):
+    plt.scatter(x[labels==i,0],x[labels==i,1] ,color=colors[i],label=f"guasissan mixture {i+1}")
+plt.xlabel("x axis")
+plt.ylabel("y axis")
+plt.legend()
+plt.show()
+
+import numpy as np
+import pandas as pd
+from sklearn import svm
+import matplotlib.pyplot as plt
+x=np.array(
+   [[1,2],[5,8],[1.5,1.8],[8,8],[1,0.6],[9,11],[7,10],[8.7,9.4],[2.3,4],[5.5,3],[7.7,8.8],[6.1,7.5]]
+)
+y=[0,1,0,1,0,1,1,1,0,0,1,1]
+clf=svm.SVC(kernel='linear')
+clf.fit(x,y)
+w=clf.coef_[0]
+slope=-w[0]/w[1]
+intercept=-clf.intercept_[0]/w[1]
+plt.scatter(x[:,0],x[:,1],c=y,cmap='autumn')
+x_range=np.linspace(0,10,100)
+optimal_hyper=slope*x_range+intercept
+plt.plot(x_range,optimal_hyper,'b-',label=f"optimal hyper")
+margin=1/np.sqrt(np.sum(w**2))
+margin_up=slope*x_range+intercept+margin
+margin_down=slope*x_range+intercept-margin
+plt.plot(x_range,margin_up,'g--',label="margin_up")
+plt.plot(x_range,margin_down,'g--',label="margin_down")
+plt.legend()
+plt.show()
+
+data = [
+    [158, 58, 'M'], [158, 59, 'M'], [158, 63, 'M'], [160, 59, 'M'], [160, 60, 'M'], 
+    [163, 60, 'M'], [163, 61, 'M'], [160, 64, 'L'], [163, 64, 'L'], [165, 61, 'L'], 
+    [165, 62, 'L'], [165, 65, 'L'], [168, 62, 'L'], [168, 63, 'L'], [168, 66, 'L'], 
+    [170, 63, 'L'], [170, 64, 'L'], [170, 68, 'L']
+]
+def dist(p1,p2):
+    return ((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)**0.5
+def knn(data,new_point,k=2):
+    distances =[]
+    for point in data:
+        height,weight,size=point
+        distance=[dist([height,weight],new_point)]
+        distances.append((distance,size))
+    distances.sort()
+    near_n=[size for _, size in distances[:k]]
+    size_count={'M':0,"L":0}
+    for size in near_n:
+        size_count[size]+=1
+    return 'M' if size_count['M']>size_count['L'] else 'L'
+k=2
+new=[164,59]
+print(knn(data,new,k=2)) 
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.array([
+    [1, 5], [5, 8], [1.5, 1.8], [8, 8], [1, 0.6], [9, 11], 
+    [7, 10], [8.7, 9.4], [2.3, 4], [5.5, 3], [7.7, 8.8], [6.1, 7.5]
+])
+y = np.array([0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1])
+y = np.where(y == 0, -1, 1)
+
+w = np.zeros(x.shape[1])
+b = 0
+learning_rate = 0.001
+epochs = 1000
+C = 1
+
+for epoch in range(epochs):
+    for i, point in enumerate(x):
+        if y[i] * (np.dot(w, point) + b) < 1:
+            w = w + learning_rate * (y[i] * point - 2 * C * w)
+            b = b + learning_rate * y[i]
+        else:
+            w = w + learning_rate * (-2 * C * w)
+
+slope = -w[0] / w[1]
+intercept = -b / w[1]
+
+plt.scatter(x[:, 0], x[:, 1], c=y, cmap='autumn')
+x_range = np.linspace(0, 10, 100)
+optimal_hyper = slope * x_range + intercept
+plt.plot(x_range, optimal_hyper, 'b-', label="optimal hyperplane")
+
+margin = 1 / np.sqrt(np.sum(w ** 2))
+margin_up = slope * x_range + intercept + margin
+margin_down = slope * x_range + intercept - margin
+plt.plot(x_range, margin_up, "g--", label="margin-up")
+plt.plot(x_range, margin_down, "g--", label="margin-down")
+
+plt.legend()
+plt.show()
